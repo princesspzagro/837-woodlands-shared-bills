@@ -18,7 +18,7 @@
 </div></header>
 <main class="wrap">
 <section class="cards" id="metrics"></section>
-<section class="section panel"><h2>How much to pay Sir Roel 💸</h2><p class="muted small">Ito ang final settle-up for October. Tap your name to see the exact amount to pay Sir Roel and the complete breakdown. Everyone can see the same transparent list.</p><div id="settlementSummary" class="cards" style="grid-template-columns:repeat(auto-fit,minmax(190px,1fr));margin:14px 0 20px"></div><h2 style="margin-top:8px">Full bill breakdown</h2><p class="muted small">Tap a housemate to open their full calculation. Amounts account for their share of all household expenses and shared expenses they already paid.</p><div id="housemateBills"></div><p class="small muted" style="margin-top:12px">Calculation rules: rent uses the listed allocation weights; PUB uses person-days (Aaron 93, Badette 31, Gelo 31, Princess 73, Roel 31); Wi-Fi and all other shared items are split equally among the five permanent housemates. Alcohol and air fryer paper are included as shared items.</p><p class="small muted">Stamping duty is not currently included in the October 2026 ledger; add the receipt amount when confirmed. Wi-Fi recorded at S$29.99, based on the previous monthly bill.</p></section>
+<section class="section panel"><h2>How much to pay Sir Roel 💸</h2><p class="muted small">Ito ang final settle-up for October. Tap your name to see the exact amount to pay Sir Roel and the complete breakdown. Everyone can see the same transparent list.</p><div id="settlementSummary" class="cards" style="grid-template-columns:repeat(auto-fit,minmax(190px,1fr));margin:14px 0 20px"></div><h2 style="margin-top:8px">Full bill breakdown</h2><p class="muted small">Tap a housemate to open their full calculation. Amounts account for their share of all household expenses and shared expenses they already paid.</p><div id="housemateBills"></div><p class="small muted" style="margin-top:12px">Calculation rules: rent uses the listed allocation weights; PUB is shown as resident usage plus a separate visitor portion (2 visitors × 31 days = 62 visitor-days). Wi-Fi and all other shared items are split equally among the five permanent housemates. Alcohol and air fryer paper are included as shared items.</p><div class="note small" style="margin-top:10px"><b>Visitor PUB shown separately:</b> October PUB total is S$558.09. The visitor portion is calculated as 62 visitor-days out of 259 total person-days, approximately <b>S$133.56</b>. It is displayed as its own line in Aaron’s breakdown so everyone can verify it is included. This assumes both visitors stayed for 31 days.</div><p class="small muted">Stamping duty is not currently included in the October 2026 ledger; add the receipt amount when confirmed. Wi-Fi recorded at S$29.99, based on the previous monthly bill.</p></section>
 
 <section class="section layout">
 <div class="panel"><div class="section-head"><div><h2>Itemized bills</h2><div class="muted small">All recorded October expenses. Every item is shared by the five renters.</div></div></div>
@@ -31,7 +31,7 @@
 <div class="panel"><h2>Shared expense categories</h2><p class="muted small">Tap the filter above to see each line item.</p><div id="categories"></div></div>
 <div class="panel"><h2>How we split</h2><div class="rules">
 <div class="rule"><b>Rent</b><span class="small muted">Uses the current household allocation weights: Aaron 35%, Badette 13.125%, Gelo 26.25%, Princess 13.125%, Roel 12.5%.</span></div>
-<div class="rule"><b>PUB / utilities</b><span class="small muted">Occupancy-based person-days: Aaron 93, Badette 31, Gelo 31, Princess 73, Roel 31. Visitors count for utilities, not groceries.</span></div>
+<div class="rule"><b>PUB / utilities</b><span class="small muted">Resident person-days are shown separately from the 2 visitors’ 62 visitor-days. The visitor portion is itemized in Aaron’s bill for transparency.</span></div>
 <div class="rule"><b>Wi-Fi and other shared costs</b><span class="small muted">Split equally among the five permanent housemates.</span></div>
 <div class="rule"><b>Groceries</b><span class="small muted">Split among the five housemates who consume them. Visitors do not pay grocery costs.</span></div>
 </div><p class="muted small" style="margin-top:12px">This is a static GitHub-hosted dashboard. The October ledger is built in; changes made on one device are not shared or saved online automatically.</p></div>
@@ -91,13 +91,24 @@ function renderSettlement(){
  const rent=sum(shared.filter(e=>e.item==="Monthly rent"));
  const pub=sum(shared.filter(e=>e.item==="October PUB bill"));
  const allocations={};
+ const residentDays={Aaron:31,Badette:31,Gelo:31,Princess:73,Roel:31};
+ const visitorDays=62;
+ const pubDays=Object.values(residentDays).reduce((a,b)=>a+b,0)+visitorDays;
  people.forEach(p=>{
-   allocations[p]=expenses.filter(e=>e.kind==="shared").map(e=>{
-     let share;
-     if(e.item==="Monthly rent") share=e.amount*weights[p];
-     else if(e.item==="October PUB bill") share=e.amount*days[p]/totalDays;
-     else share=e.amount/people.length;
-     return {...e,share};
+   allocations[p]=expenses.filter(e=>e.kind==="shared").flatMap(e=>{
+     if(e.item==="October PUB bill"){
+       const residentShare=e.amount*residentDays[p]/pubDays;
+       if(p==="Aaron"){
+         const visitorShare=e.amount*visitorDays/pubDays;
+         return [
+           {...e,item:"October PUB bill — Aaron resident share (31 days)",category:"Utilities",share:residentShare},
+           {...e,item:"Visitor PUB share — 2 visitors × 31 days",category:"Visitor PUB",share:visitorShare}
+         ];
+       }
+       return [{...e,item:"October PUB bill — resident share ("+residentDays[p]+" days)",share:residentShare}];
+     }
+     let share=e.item==="Monthly rent"?e.amount*weights[p]:e.amount/people.length;
+     return [{...e,share}];
    });
  });
  const shares=Object.fromEntries(people.map(p=>[p,allocations[p].reduce((a,e)=>a+e.share,0)]));
