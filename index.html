@@ -35,6 +35,11 @@ main{padding-top:24px}.cards{gap:14px}.card,.panel{border-color:#dfe9e4;border-r
 .compact-copy{display:none}
 @media(max-width:760px){.chart-grid{grid-template-columns:1fr}.chart-panel{padding:16px}.donut{width:145px}.chart-bar-row{grid-template-columns:76px minmax(55px,1fr) auto;gap:7px}.chart-bar-row{font-size:.78rem}}
 
+
+.payment-glance{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px;margin-top:12px}
+.payment-chip{border:1px solid var(--line);border-radius:14px;padding:13px;background:#fbfdfb}
+.payment-chip .who{font-weight:850}.payment-chip .amt{font-size:1.18rem;font-weight:900;letter-spacing:-.03em;margin:3px 0}.payment-chip .count{font-size:.78rem;color:var(--muted)}
+
 </style>
 </head>
 <body>
@@ -48,7 +53,7 @@ main{padding-top:24px}.cards{gap:14px}.card,.panel{border-color:#dfe9e4;border-r
 <section class="payday-banner" aria-label="Payday reminder"><div class="payday-copy"><div class="payday-kicker">Team 837 · 😄</div><h2>May bill na? Malapit na ang sahod! 💸</h2></div><div class="payday-sticker">Sahod loading…<br>⏳ Konting kembot!</div></section>
 <section class="section chart-grid" aria-label="Visual bill summary">
 <div class="chart-panel"><div class="chart-title"><h2>Where the money goes</h2><span class="muted small">By category</span></div><div class="donut-wrap"><div id="categoryDonut" class="donut" role="img" aria-label="Expense category chart"></div><div id="categoryLegend" class="legend"></div></div></div>
-<div class="chart-panel"><div class="chart-title"><h2>Who paid</h2><span class="chart-total" id="chartGrandTotal">S$0.00</span></div><div id="payerChart" class="chart-bars"></div><div class="chart-foot">All recorded payments · shared household expenses</div></div>
+<div class="chart-panel"><div class="chart-title"><h2>Who paid</h2><span class="chart-total" id="chartGrandTotal">S$0.00</span></div><div id="payerChart" class="chart-bars"></div><div id="paymentGlance" class="payment-glance"></div><div class="chart-foot">All recorded payments · amount and count at a glance</div></div>
 </section>
 <section class="section panel"><h2>How much to pay Sir Roel 💸</h2><p class="muted small">Ito ang final settle-up for October. Tap your name to see the exact amount to pay Sir Roel and the complete breakdown. Everyone can see the same transparent list.</p><div id="settlementSummary" class="cards" style="grid-template-columns:repeat(auto-fit,minmax(190px,1fr));margin:14px 0 20px"></div><h2 style="margin-top:8px">Full bill breakdown</h2><p class="muted small">Tap a housemate to open their full calculation. Amounts account for their share of all household expenses and shared expenses they already paid.</p><div id="housemateBills"></div><p class="small muted" style="margin-top:12px">Calculation rules: rent uses the listed allocation weights; PUB is itemized into resident usage and separate visitor portions. Aaron had 2 visitors for 31 days each (62 visitor-days). Princess had 3 visitors from Sep 30 to Oct 13 (42 visitor-days, assuming 14 days each). Wi-Fi and all other shared items are split equally among the five permanent housemates.</p><div class="note small" style="margin-top:10px"><b>✅ VISITOR PUB IS INCLUDED IN THIS MONTH’S CALCULATION</b><p style="margin:6px 0">We have explicitly calculated visitor usage as part of the S$558.09 October PUB bill. It is not left as an assumption and is not added twice.</p><div class="tablewrap"><table><thead><tr><th>Visitor PUB calculation</th><th>Visitor-days</th><th class="amount">Allocated PUB</th></tr></thead><tbody><tr><td>Aaron — 2 visitors × 31 days each</td><td>62</td><td class="amount">S$133.56</td></tr><tr><td>Princess — 3 visitors × 14 days each (Sep 30–Oct 13)</td><td>42</td><td class="amount">S$90.52</td></tr><tr><td><b>Total visitor PUB included</b></td><td><b>104</b></td><td class="amount"><b>S$224.08</b></td></tr></tbody></table></div><p style="margin:6px 0 0">The visitor portions are included within the existing PUB bill. In each host’s detailed bill, look for the separate line named “Visitor PUB share.”</p></div><p class="small muted">No stamping duty is included in October because it is a biennial expense and does not fall in this billing period. Wi-Fi recorded at S$29.99, based on the previous monthly bill.</p></section>
 
@@ -164,6 +169,28 @@ function renderSettlement(){
    return '<button type="button" class="card" style="text-align:left;background:#fff;color:var(--ink);border:1px solid var(--line);padding:15px;cursor:pointer" onclick="document.getElementById(\'bill-'+p.toLowerCase()+'\').open=true;document.getElementById(\'bill-'+p.toLowerCase()+'\').scrollIntoView({behavior:\'smooth\',block:\'center\'})"><div class="metric-label">'+p+'</div><div class="metric" style="font-size:1.45rem;color:'+color+'">'+money(amount)+'</div><div class="metric-note">'+label+' · tap for breakdown</div></button>';
  }).join("");
 }
+
+function renderCharts(){
+ const colors=["#147b75","#a7d96b","#f3c66a","#6ba6d8","#e89b85","#9b8bd4","#6db8a8","#d3a4c7"];
+ const cats={}; expenses.forEach(e=>cats[e.category]=(cats[e.category]||0)+e.amount);
+ const entries=Object.entries(cats).sort((a,b)=>b[1]-a[1]);
+ let start=0; const total=sum(expenses);
+ const stops=entries.map(([name,value],i)=>{const from=start;start+=value/total*100;return colors[i%colors.length]+" "+from+"% "+start+"%"}).join(",");
+ const donut=document.getElementById("categoryDonut");
+ donut.style.background="conic-gradient("+stops+")";
+ donut.setAttribute("aria-label","Expense categories totaling "+money(total));
+ document.getElementById("categoryLegend").innerHTML=entries.map(([name,value],i)=>'<div class="legend-row"><span class="legend-dot" style="background:'+colors[i%colors.length]+'"></span><span>'+name+'</span><b>'+money(value)+'</b></div>').join("");
+ const paid=people.map(p=>({name:p,total:sum(expenses.filter(e=>e.payer===p)),count:expenses.filter(e=>e.payer===p).length}));
+ const max=Math.max(...paid.map(p=>p.total),1);
+ document.getElementById("chartGrandTotal").textContent=money(total);
+ const glance=document.getElementById("paymentGlance");
+ if(glance) glance.innerHTML=people.map(p=>({name:p,total:sum(expenses.filter(e=>e.payer===p)),count:expenses.filter(e=>e.payer===p).length})).map(p=>'<div class="payment-chip"><div class="who">'+p.name+'</div><div class="amt">'+money(p.total)+'</div><div class="count">'+p.count+' payments recorded</div></div>').join("");
+
+ document.getElementById("payerChart").innerHTML=paid.sort((a,b)=>b.total-a.total).map(p=>'<div class="chart-bar-row"><span class="chart-bar-label">'+p.name+'</span><div class="chart-track"><div class="chart-fill" style="width:'+(p.total/max*100)+'%"></div></div><span class="money">'+money(p.total)+'</span></div>').join("");
+ const paidPanel=document.querySelector('.chart-panel:nth-child(2) .chart-foot');
+ if(paidPanel) paidPanel.textContent="At a glance · amount paid + number of payments";
+}
+
 render();renderCharts();renderSettlement();
 </script>
 </body></html>
