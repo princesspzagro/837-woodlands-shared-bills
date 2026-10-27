@@ -64,7 +64,7 @@ main{padding-top:24px}.cards{gap:14px}.card,.panel{border-color:#dfe9e4;border-r
 <div class="filters"><input id="search" type="search" placeholder="Search item or payer…"><select id="payer"><option value="all">All payers</option></select></div>
 <div class="tablewrap"><table><thead><tr><th>Expense</th><th>Paid by</th><th>Type</th><th class="amount">Amount</th></tr></thead><tbody id="ledger"></tbody></table></div>
 </div>
-<div class="panel"><h2>Who paid what?</h2><p class="muted small">All recorded expenses, including groceries, alcohol and air fryer paper, are shared by all five renters.</p><div id="paidBy"></div><div class="note small">Alcohol purchases and air fryer paper are shared equally among all five renters.</div></div>
+<div class="panel"><h2>Who paid what?</h2><p class="muted small">Tap each name to see the exact items they paid for first, the amount of each receipt, and their total paid.</p><div id="paidBy"></div><div class="note small">These are the original payments by each person before splitting the costs. Alcohol purchases and air fryer paper are included in the shared split.</div></div>
 </section>
 <section class="section layout">
 <div class="panel"><h2>Shared expense categories</h2><p class="muted small">Tap the filter above to see each line item.</p><div id="categories"></div></div>
@@ -119,7 +119,7 @@ function render(){
  const filtered=expenses.filter(e=>(payer==="all"||e.payer===payer)&&(!q||(e.item+" "+e.payer+" "+e.category).toLowerCase().includes(q)));
  document.getElementById("ledger").innerHTML=filtered.map(e=>'<tr><td>'+e.item+'</td><td>'+e.payer+'</td><td><span class="pill shared">Shared</span></td><td class="amount">'+money(e.amount)+'</td></tr>').join("")||'<tr><td colspan="4" class="empty">No matching expenses.</td></tr>';
  const paid=people.map(p=>({p,total:sum(shared.filter(e=>e.payer===p))}));const max=Math.max(...paid.map(x=>x.total),1);
- document.getElementById("paidBy").innerHTML=paid.map(x=>'<div class="splitrow"><div class="avatar">'+x.p[0]+'</div><div class="splitmain"><div class="splitname">'+x.p+'</div><div class="track"><div class="fill" style="width:'+(x.total/max*100)+'%"></div></div></div><div class="money">'+money(x.total)+'</div></div>').join("");
+ document.getElementById("paidBy").innerHTML=paid.map(x=>{const items=shared.filter(e=>e.payer===x.p);return '<details style="border-bottom:1px solid var(--line);padding:10px 0"><summary style="cursor:pointer;list-style-position:inside"><span style="display:inline-flex;align-items:center;gap:9px;vertical-align:middle"><span class="avatar">'+x.p[0]+'</span><span><b>'+x.p+'</b><span class="small muted" style="display:block">'+items.length+' items paid for</span></span></span><b style="float:right">'+money(x.total)+'</b></summary><div class="tablewrap" style="margin-top:10px"><table><thead><tr><th>Item paid for</th><th class="amount">Amount paid</th></tr></thead><tbody>'+items.map(e=>'<tr><td>'+e.item+'</td><td class="amount">'+money(e.amount)+'</td></tr>').join('')+'</tbody><tfoot><tr><th>Total paid by '+x.p+'</th><th class="amount">'+money(x.total)+'</th></tr></tfoot></table></div></details>';}).join("");
  const cats={};shared.forEach(e=>cats[e.category]=(cats[e.category]||0)+e.amount);
  document.getElementById("categories").innerHTML=Object.entries(cats).map(([k,v])=>'<div class="splitrow"><div class="splitmain"><div class="splitname">'+k+'</div><div class="track"><div class="fill" style="width:'+(v/sum(shared)*100)+'%"></div></div></div><div class="money">'+money(v)+'</div></div>').join("");
 }
@@ -171,6 +171,7 @@ function renderSettlement(){
    const label=p==="Roel"?"Total to collect from housemates":(owes?"Transfer to Sir Roel":"No payment due to Sir Roel");
    const color=p==="Roel"?"#147b75":(owes?"#a74343":"#246543");
    return '<div class="card" style="text-align:left;background:#fff;color:var(--ink);border:2px solid '+(p==="Roel"?"#147b75":"var(--line)")+';padding:16px"><div class="metric-label" style="font-size:1rem;color:var(--ink);font-weight:900">'+p+'</div><div class="metric" style="font-size:1.65rem;color:'+color+'">'+money(amount)+'</div><div class="metric-note">'+label+'</div></div>';
+ }).join("");
 }
 
 function renderCharts(){
