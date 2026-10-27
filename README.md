@@ -3,9 +3,10 @@
 A mobile-friendly, static household bills dashboard for 837 Woodlands St 82.
 
 ## October 2026
-- 20 itemized expense entries
-- S$4,287.55 total recorded
-- S$4,287.55 shared household costs (all currently recorded items)
+- 22 itemized expense entries
+- S$4,310.05 total recorded
+- S$4,310.05 shared household costs (all currently recorded items)
+- Added Oct 27 groceries: Eden cheese S$12.00 and onion and garlic S$10.50, both paid by Badette
 - All recorded purchases and household costs are included in the shared split
 - Item search, payer/type filters, print-to-PDF, and CSV export
 
@@ -26,4 +27,4 @@ This site is static. Its October ledger is built into `index.html`; edits on one
 - All expenses, including alcohol and air fryer paper, are shared by all five renters.
 
 ## Note
-The S$29.99 Wi-Fi amount is carried forward from the previous monthly bill. Stamping duty is not currently included in the October 2026 ledger; add it when the receipt amount is confirmed.
+The S$29.99 Wi-Fi amount is carried forward from the previous monthly bill. Stamping duty is not included because it is a biennial expense and does not fall in October 2026.
