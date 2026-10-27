@@ -18,6 +18,8 @@
 </div></header>
 <main class="wrap">
 <section class="cards" id="metrics"></section>
+<section class="section panel"><h2>Each housemate’s bill</h2><p class="muted small">Tap a housemate to open their full calculation. “Household share” is their allocated share of the month’s shared expenses. “Settle-up” accounts for shared bills they already paid: if positive, they should receive that amount back; if negative, that is the amount they still need to pay into the household.</p><div id="housemateBills"></div><p class="small muted" style="margin-top:12px">Calculation rules: rent uses the listed allocation weights; PUB uses person-days (Aaron 93, Badette 31, Gelo 31, Princess 73, Roel 31); Wi-Fi and all other shared items are split equally among the five permanent housemates. Alcohol and air fryer paper are included as shared items.</p><p class="small muted">Stamping duty is not currently included in the October 2026 ledger; add the receipt amount when confirmed. Wi-Fi recorded at S$29.99, based on the previous monthly bill.</p></section>
+
 <section class="section layout">
 <div class="panel"><div class="section-head"><div><h2>Itemized bills</h2><div class="muted small">All recorded October expenses, including shared alcohol and household items.</div></div></div>
 <div class="filters"><input id="search" type="search" placeholder="Search item or payer…"><select id="type"><option value="all">All expense types</option><option value="shared">Shared only</option><option value="personal">Personal only</option></select><select id="payer"><option value="all">All payers</option></select></div>
@@ -34,7 +36,7 @@
 <div class="rule"><b>Groceries</b><span class="small muted">Split among the five housemates who consume them. Visitors do not pay grocery costs.</span></div>
 </div><p class="muted small" style="margin-top:12px">This is a static GitHub-hosted dashboard. The October ledger is built in; changes made on one device are not shared or saved online automatically.</p></div>
 </section>
-<section class="section panel"><h2>Each housemate’s bill</h2><p class="muted small">Tap a housemate to open their full calculation. “Household share” is their allocated share of the month’s shared expenses. “Settle-up” accounts for shared bills they already paid: if positive, they should receive that amount back; if negative, that is the amount they still need to pay into the household.</p><div id="housemateBills"></div><p class="small muted" style="margin-top:12px">Calculation rules: rent uses the listed allocation weights; PUB uses person-days (Aaron 93, Badette 31, Gelo 31, Princess 73, Roel 31); Wi-Fi and all other shared items are split equally among the five permanent housemates. Alcohol and air fryer paper are included as shared items.</p><p class="small muted">Stamping duty is not currently included in the October 2026 ledger; add the receipt amount when confirmed. Wi-Fi recorded at S$29.99, based on the previous monthly bill.</p></section>
+
 <div class="footer">Built for the Woodlands household · October 2026 · Keep the receipts, keep it fair. 💚</div>
 </main>
 <script>
