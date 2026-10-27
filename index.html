@@ -19,11 +19,11 @@
 <main class="wrap">
 <section class="cards" id="metrics"></section>
 <section class="section layout">
-<div class="panel"><div class="section-head"><div><h2>Itemized bills</h2><div class="muted small">All recorded October expenses, including personal items for transparency.</div></div></div>
+<div class="panel"><div class="section-head"><div><h2>Itemized bills</h2><div class="muted small">All recorded October expenses, including shared alcohol and household items.</div></div></div>
 <div class="filters"><input id="search" type="search" placeholder="Search item or payer…"><select id="type"><option value="all">All expense types</option><option value="shared">Shared only</option><option value="personal">Personal only</option></select><select id="payer"><option value="all">All payers</option></select></div>
 <div class="tablewrap"><table><thead><tr><th>Expense</th><th>Paid by</th><th>Type</th><th class="amount">Amount</th></tr></thead><tbody id="ledger"></tbody></table></div>
 </div>
-<div class="panel"><h2>Who paid what?</h2><p class="muted small">Payments marked shared are counted toward household contributions. Personal purchases are excluded from the shared split.</p><div id="paidBy"></div><div class="note small">Baileys and duty-free alcohol are shown for transparency, but excluded from shared household costs.</div></div>
+<div class="panel"><h2>Who paid what?</h2><p class="muted small">All listed alcohol and the air fryer paper are shared by all five renters.</p><div id="paidBy"></div><div class="note small">Alcohol purchases and air fryer paper are shared equally among all five renters.</div></div>
 </section>
 <section class="section layout">
 <div class="panel"><h2>Shared expense categories</h2><p class="muted small">Tap the filter above to see each line item.</p><div id="categories"></div></div>
@@ -34,7 +34,7 @@
 <div class="rule"><b>Groceries</b><span class="small muted">Split among the five housemates who consume them. Visitors do not pay grocery costs.</span></div>
 </div><p class="muted small" style="margin-top:12px">This is a static GitHub-hosted dashboard. The October ledger is built in; changes made on one device are not shared or saved online automatically.</p></div>
 </section>
-<section class="section panel"><h2>Estimated share & settle-up</h2><p class="muted small">Estimated allocation using the rules shown above. “Paid” counts shared expenses paid by each housemate; positive balance means they paid more than their share, negative means they still owe their share.</p><div class="tablewrap"><table><thead><tr><th>Housemate</th><th class="amount">Estimated share</th><th class="amount">Shared expenses paid</th><th class="amount">Balance</th></tr></thead><tbody id="settlement"></tbody></table></div><p class="small muted" style="margin-top:12px">Calculation: rent uses the listed allocation weights; PUB uses person-days (Aaron 93, Badette 31, Gelo 31, Princess 73, Roel 31); Wi-Fi and remaining shared expenses are split equally among the five permanent housemates. Grocery costs exclude visitors.</p><p class="small muted">Stamping duty: none recorded for October 2026 (it occurs every two years). Wi-Fi recorded at S$29.99, based on the previous monthly bill.</p></section>
+<section class="section panel"><h2>Estimated share & settle-up</h2><p class="muted small">Estimated allocation using the rules shown above. “Paid” counts shared expenses paid by each housemate; positive balance means they paid more than their share, negative means they still owe their share.</p><div class="tablewrap"><table><thead><tr><th>Housemate</th><th class="amount">Estimated share</th><th class="amount">Shared expenses paid</th><th class="amount">Balance</th></tr></thead><tbody id="settlement"></tbody></table></div><p class="small muted" style="margin-top:12px">Calculation: rent uses the listed allocation weights; PUB uses person-days (Aaron 93, Badette 31, Gelo 31, Princess 73, Roel 31); Wi-Fi and remaining shared expenses are split equally among the five permanent housemates. Grocery costs exclude visitors.</p><p class="small muted">Stamping duty: not currently included in the October 2026 ledger; add the receipt amount when confirmed. Wi-Fi recorded at S$29.99, based on the previous monthly bill.</p></section>
 <div class="footer">Built for the Woodlands household · October 2026 · Keep the receipts, keep it fair. 💚</div>
 </main>
 <script>
@@ -48,10 +48,10 @@ const expenses=[
 {item:"Grab Malaysia",payer:"Roel",amount:7.22,kind:"shared",category:"Transport / trip"},
 {item:"Grab Malaysia",payer:"Roel",amount:28.53,kind:"shared",category:"Transport / trip"},
 {item:"LPG",payer:"Princess",amount:38,kind:"shared",category:"Household"},
-{item:"Baileys Original",payer:"Gelo",amount:27,kind:"personal",category:"Personal"},
-{item:"Lotte Duty Free — Absolut Vanilla",payer:"Gelo",amount:31.50,kind:"personal",category:"Personal"},
-{item:"Additional amount — Absolut Vanilla",payer:"Gelo",amount:4,kind:"personal",category:"Personal"},
-{item:"Lotte Duty Free — Jack Daniel’s Black Label",payer:"Badette",amount:41,kind:"personal",category:"Personal"},
+{item:"Baileys Original (shared)",payer:"Gelo",amount:27,kind:"shared",category:"Shared items"},
+{item:"Lotte Duty Free — Absolut Vanilla (shared)",payer:"Gelo",amount:31.50,kind:"shared",category:"Shared items"},
+{item:"Air fryer paper",payer:"Gelo",amount:4,kind:"shared",category:"Household"},
+{item:"Lotte Duty Free — Jack Daniel’s Black Label (shared)",payer:"Badette",amount:41,kind:"shared",category:"Shared items"},
 {item:"Eggs",payer:"Badette",amount:6.95,kind:"shared",category:"Groceries"},
 {item:"Onion and eggs",payer:"Badette",amount:8.81,kind:"shared",category:"Groceries"},
 {item:"Fruit salad",payer:"Badette",amount:14.80,kind:"shared",category:"Groceries"},
@@ -67,7 +67,7 @@ const shared=expenses.filter(x=>x.kind==="shared"), personal=expenses.filter(x=>
 document.getElementById("metrics").innerHTML=[
 ["Total recorded",sum(expenses),"20 itemized entries"],
 ["Shared household costs",sum(shared),"Included in household split"],
-["Personal purchases",sum(personal),"Excluded from shared costs"],
+["Personal purchases",sum(personal),"No personal items currently classified"],
 ["Shared line items",shared.length,"Across bills, groceries and household items"]
 ].map(([label,val,note])=>'<div class="card"><div class="metric-label">'+label+'</div><div class="metric">'+(typeof val==="number"&&label!=="Shared line items"?money(val):val)+'</div><div class="metric-note">'+note+'</div></div>').join("");
 const payerSelect=document.getElementById("payer");people.forEach(p=>payerSelect.insertAdjacentHTML("beforeend",'<option value="'+p+'">'+p+'</option>'));
