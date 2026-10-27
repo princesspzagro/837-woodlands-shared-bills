@@ -1,2 +1,29 @@
-# 837-woodlands-shared-bills
-Shared household bills dashboard
+# 837 Woodlands Shared Bills
+
+A mobile-friendly, static household bills dashboard for 837 Woodlands St 82.
+
+## October 2026
+- 20 itemized expense entries
+- S$4,287.55 total recorded
+- S$4,184.05 shared household costs
+- S$103.50 personal purchases excluded from the shared split
+- Item search, payer/type filters, print-to-PDF, and CSV export
+
+## Publish with GitHub Pages
+1. Open **Settings** in this repository.
+2. Select **Pages**.
+3. Under **Build and deployment**, choose **Deploy from a branch**.
+4. Select branch **main** and folder **/(root)**, then Save.
+5. Wait for the Pages URL to appear in the Pages settings.
+
+This site is static. Its October ledger is built into `index.html`; edits on one visitor's device do not save to a shared online database. A shared, multi-user editable ledger needs a backend/database service.
+
+## Split rules displayed
+- Rent uses the current allocation weights shown on the dashboard.
+- PUB is weighted by recorded occupant person-days (including visitors).
+- Wi-Fi and other shared costs are divided equally among five permanent housemates.
+- Groceries are divided among five permanent housemates; visitors do not pay grocery costs.
+- Personal alcohol purchases are visible but excluded from shared household costs.
+
+## Note
+The S$29.99 Wi-Fi amount is carried forward from the previous monthly bill. No stamping duty is recorded for October 2026.
