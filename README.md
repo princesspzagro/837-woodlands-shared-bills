@@ -6,7 +6,7 @@ A mobile-friendly, static household bills dashboard for 837 Woodlands St 82.
 - 20 itemized expense entries
 - S$4,287.55 total recorded
 - S$4,287.55 shared household costs (all currently recorded items)
-- S$0.00 personal purchases excluded from the shared split
+- All recorded purchases and household costs are included in the shared split
 - Item search, payer/type filters, print-to-PDF, and CSV export
 
 ## Publish with GitHub Pages
@@ -23,7 +23,7 @@ This site is static. Its October ledger is built into `index.html`; edits on one
 - PUB is weighted by recorded occupant person-days (including visitors).
 - Wi-Fi and other shared costs are divided equally among five permanent housemates.
 - Groceries are divided among five permanent housemates; visitors do not pay grocery costs.
-- Alcohol purchases and air fryer paper are shared by all five renters.
+- All expenses, including alcohol and air fryer paper, are shared by all five renters.
 
 ## Note
 The S$29.99 Wi-Fi amount is carried forward from the previous monthly bill. Stamping duty is not currently included in the October 2026 ledger; add it when the receipt amount is confirmed.
