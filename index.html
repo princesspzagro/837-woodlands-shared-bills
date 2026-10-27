@@ -21,7 +21,7 @@
 <section class="section panel"><h2>Each housemate’s bill</h2><p class="muted small">Tap a housemate to open their full calculation. “Household share” is their allocated share of the month’s shared expenses. “Settle-up” accounts for shared bills they already paid: if positive, they should receive that amount back; if negative, that is the amount they still need to pay into the household.</p><div id="housemateBills"></div><p class="small muted" style="margin-top:12px">Calculation rules: rent uses the listed allocation weights; PUB uses person-days (Aaron 93, Badette 31, Gelo 31, Princess 73, Roel 31); Wi-Fi and all other shared items are split equally among the five permanent housemates. Alcohol and air fryer paper are included as shared items.</p><p class="small muted">Stamping duty is not currently included in the October 2026 ledger; add the receipt amount when confirmed. Wi-Fi recorded at S$29.99, based on the previous monthly bill.</p></section>
 
 <section class="section layout">
-<div class="panel"><div class="section-head"><div><h2>Itemized bills</h2><div class="muted small">All recorded October expenses, including shared alcohol and household items.</div></div></div>
+<div class="panel"><div class="section-head"><div><h2>Itemized bills</h2><div class="muted small">All recorded October expenses. Every item is shared by the five renters.</div></div></div>
 <div class="filters"><input id="search" type="search" placeholder="Search item or payer…"><select id="payer"><option value="all">All payers</option></select></div>
 <div class="tablewrap"><table><thead><tr><th>Expense</th><th>Paid by</th><th>Type</th><th class="amount">Amount</th></tr></thead><tbody id="ledger"></tbody></table></div>
 </div>
@@ -69,9 +69,9 @@ const shared=expenses, personal=[];
 document.getElementById("metrics").innerHTML=[
 ["Total recorded",sum(expenses),"20 itemized entries"],
 ["Shared household costs",sum(shared),"Included in household split"],
-["Other shared items",sum(personal),"All expenses included in shared costs"],
+["Alcohol & household",sum(expenses.filter(e=>e.category==="Shared items"||e.item==="Air fryer paper")),"Included in shared split"],
 ["Shared line items",shared.length,"Across bills, groceries and household items"]
-].map(([label,val,note])=>'<div class="card"><div class="metric-label">'+(label==="Personal purchases"?"Other shared items":label)+'</div><div class="metric">'+(typeof val==="number"&&label!=="Shared line items"?money(val):val)+'</div><div class="metric-note">'+(label==="Personal purchases"?"All expenses included in shared costs":note)+'</div></div>').join("");
+].map(([label,val,note])=>'<div class="card"><div class="metric-label">'+(label)+'</div><div class="metric">'+(typeof val==="number"&&label!=="Shared line items"?money(val):val)+'</div><div class="metric-note">'+(note)+'</div></div>').join("");
 const payerSelect=document.getElementById("payer");people.forEach(p=>payerSelect.insertAdjacentHTML("beforeend",'<option value="'+p+'">'+p+'</option>'));
 function render(){
  const q=document.getElementById("search").value.toLowerCase(), payer=document.getElementById("payer").value;
@@ -83,7 +83,7 @@ function render(){
  document.getElementById("categories").innerHTML=Object.entries(cats).map(([k,v])=>'<div class="splitrow"><div class="splitmain"><div class="splitname">'+k+'</div><div class="track"><div class="fill" style="width:'+(v/sum(shared)*100)+'%"></div></div></div><div class="money">'+money(v)+'</div></div>').join("");
 }
 ["search","payer"].forEach(id=>document.getElementById(id).addEventListener(id==="search"?"input":"change",render));
-document.getElementById("csvBtn").addEventListener("click",()=>{const rows=[["Expense","Paid by","Type","Category","Amount"],...expenses.map(e=>[e.item,e.payer,e.kind,e.category,e.amount.toFixed(2)])];const csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(",")).join("\r\n");const blob=new Blob([csv],{type:"text/csv;charset=utf-8;"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="woodlands-october-2026-expenses.csv";a.click();URL.revokeObjectURL(url)});
+document.getElementById("csvBtn").addEventListener("click",()=>{const rows=[["Expense","Paid by","Type","Category","Amount"],...expenses.map(e=>[e.item,e.payer,"Shared",e.category,e.amount.toFixed(2)])];const csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(",")).join("\r\n");const blob=new Blob([csv],{type:"text/csv;charset=utf-8;"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="woodlands-october-2026-expenses.csv";a.click();URL.revokeObjectURL(url)});
 function renderSettlement(){
  const weights={Aaron:.35,Badette:.13125,Gelo:.2625,Princess:.13125,Roel:.125};
  const days={Aaron:93,Badette:31,Gelo:31,Princess:73,Roel:31};
