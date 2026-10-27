@@ -34,7 +34,7 @@
 <div class="rule"><b>Groceries</b><span class="small muted">Split among the five housemates who consume them. Visitors do not pay grocery costs.</span></div>
 </div><p class="muted small" style="margin-top:12px">This is a static GitHub-hosted dashboard. The October ledger is built in; changes made on one device are not shared or saved online automatically.</p></div>
 </section>
-<section class="section panel"><h2>Estimated share & settle-up</h2><p class="muted small">Estimated allocation using the rules shown above. “Paid” counts shared expenses paid by each housemate; positive balance means they paid more than their share, negative means they still owe their share.</p><div class="tablewrap"><table><thead><tr><th>Housemate</th><th class="amount">Estimated share</th><th class="amount">Shared expenses paid</th><th class="amount">Balance</th></tr></thead><tbody id="settlement"></tbody></table></div><p class="small muted" style="margin-top:12px">Calculation: rent uses the listed allocation weights; PUB uses person-days (Aaron 93, Badette 31, Gelo 31, Princess 73, Roel 31); Wi-Fi and remaining shared expenses are split equally among the five permanent housemates. Grocery costs exclude visitors.</p><p class="small muted">Stamping duty: not currently included in the October 2026 ledger; add the receipt amount when confirmed. Wi-Fi recorded at S$29.99, based on the previous monthly bill.</p></section>
+<section class="section panel"><h2>Each housemate’s bill</h2><p class="muted small">Tap a housemate to open their full calculation. “Household share” is their allocated share of the month’s shared expenses. “Settle-up” accounts for shared bills they already paid: if positive, they should receive that amount back; if negative, that is the amount they still need to pay into the household.</p><div id="housemateBills"></div><p class="small muted" style="margin-top:12px">Calculation rules: rent uses the listed allocation weights; PUB uses person-days (Aaron 93, Badette 31, Gelo 31, Princess 73, Roel 31); Wi-Fi and all other shared items are split equally among the five permanent housemates. Alcohol and air fryer paper are included as shared items.</p><p class="small muted">Stamping duty is not currently included in the October 2026 ledger; add the receipt amount when confirmed. Wi-Fi recorded at S$29.99, based on the previous monthly bill.</p></section>
 <div class="footer">Built for the Woodlands household · October 2026 · Keep the receipts, keep it fair. 💚</div>
 </main>
 <script>
@@ -86,14 +86,28 @@ function renderSettlement(){
  const weights={Aaron:.35,Badette:.13125,Gelo:.2625,Princess:.13125,Roel:.125};
  const days={Aaron:93,Badette:31,Gelo:31,Princess:73,Roel:31};
  const totalDays=Object.values(days).reduce((a,b)=>a+b,0);
- const shares=Object.fromEntries(people.map(p=>[p,0]));
  const rent=sum(shared.filter(e=>e.item==="Monthly rent"));
  const pub=sum(shared.filter(e=>e.item==="October PUB bill"));
- const wifi=sum(shared.filter(e=>e.item==="Monthly Wi-Fi"));
- const equalPool=sum(shared.filter(e=>!["Monthly rent","October PUB bill","Monthly Wi-Fi"].includes(e.item)));
- people.forEach(p=>{shares[p]+=rent*weights[p]+pub*days[p]/totalDays+(wifi+equalPool)/people.length});
+ const allocations={};
+ people.forEach(p=>{
+   allocations[p]=expenses.filter(e=>e.kind==="shared").map(e=>{
+     let share;
+     if(e.item==="Monthly rent") share=e.amount*weights[p];
+     else if(e.item==="October PUB bill") share=e.amount*days[p]/totalDays;
+     else share=e.amount/people.length;
+     return {...e,share};
+   });
+ });
+ const shares=Object.fromEntries(people.map(p=>[p,allocations[p].reduce((a,e)=>a+e.share,0)]));
  const paid=Object.fromEntries(people.map(p=>[p,sum(shared.filter(e=>e.payer===p))]));
- document.getElementById("settlement").innerHTML=people.map(p=>{const balance=paid[p]-shares[p];const color=balance>=0?"#246543":"#a74343";const label=balance>=0?"is owed":"owes";return '<tr><td><b>'+p+'</b></td><td class="amount">'+money(shares[p])+'</td><td class="amount">'+money(paid[p])+'</td><td class="amount" style="color:'+color+'"><b>'+money(Math.abs(balance))+'</b><br><span class="small">'+label+'</span></td></tr>'}).join("");
+ document.getElementById("housemateBills").innerHTML=people.map(p=>{
+   const balance=paid[p]-shares[p], positive=balance>=-0.005, color=positive?"#246543":"#a74343";
+   const label=balance>=-0.005?"To receive back":"Still to pay";
+   const details=allocations[p].map(e=>'<tr><td>'+e.item+'</td><td>'+e.category+'</td><td class="amount">'+money(e.share)+'</td></tr>').join("");
+   const grouped={};allocations[p].forEach(e=>grouped[e.category]=(grouped[e.category]||0)+e.share);
+   const categoryRows=Object.entries(grouped).map(([k,v])=>'<tr><td>'+k+'</td><td class="amount">'+money(v)+'</td></tr>').join("");
+   return '<details class="bill-detail" style="border:1px solid var(--line);border-radius:14px;margin-top:10px;background:#fff"><summary style="padding:14px;cursor:pointer;list-style-position:inside"><b>'+p+'</b><span style="float:right;font-weight:850">'+money(shares[p])+'</span><div class="small muted" style="margin-left:20px">Household share · '+label+': <b style="color:'+color+'">'+money(Math.abs(balance))+'</b></div></summary><div style="padding:0 14px 14px"><div class="rules"><div class="rule"><b>Household share</b><span class="money">'+money(shares[p])+'</span></div><div class="rule"><b>Shared expenses paid by '+p+'</b><span class="money">'+money(paid[p])+'</span></div></div><h3 style="font-size:1rem;margin:16px 0 6px">How the bill is calculated</h3><div class="tablewrap"><table><thead><tr><th>Category</th><th class="amount">Your share</th></tr></thead><tbody>'+categoryRows+'</tbody><tfoot><tr><th>Total household share</th><th class="amount">'+money(shares[p])+'</th></tr></tfoot></table></div><h3 style="font-size:1rem;margin:16px 0 6px">Item-by-item breakdown</h3><div class="tablewrap"><table><thead><tr><th>Item</th><th>Category</th><th class="amount">Your share</th></tr></thead><tbody>'+details+'</tbody><tfoot><tr><th colspan="2">Total</th><th class="amount">'+money(shares[p])+'</th></tr></tfoot></table></div><p class="small muted">Rent is allocated using the household rent weights. PUB is allocated by person-days. Every other shared item—including groceries, alcohol and air fryer paper—is divided equally among all five renters. Shared expenses paid by you are deducted when calculating the settle-up amount.</p></div></details>';
+ }).join("");
 }
 render();renderSettlement();
 </script>
