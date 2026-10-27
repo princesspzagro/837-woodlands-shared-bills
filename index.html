@@ -34,7 +34,7 @@
 <div class="rule"><b>Groceries</b><span class="small muted">Split among the five housemates who consume them. Visitors do not pay grocery costs.</span></div>
 </div><p class="muted small" style="margin-top:12px">This is a static GitHub-hosted dashboard. The October ledger is built in; changes made on one device are not shared or saved online automatically.</p></div>
 </section>
-<section class="section panel"><h2>Before settling up</h2><p class="muted">This page is the transparent record of expenses and who paid. Use the itemized ledger to check the source amounts. The amount paid by each person is not the same as their final balance: the split rules above determine each person's share.</p><p class="small muted">Stamping duty: none recorded for October 2026 (it occurs every two years). Wi-Fi recorded at S$29.99, based on the previous monthly bill.</p></section>
+<section class="section panel"><h2>Estimated share & settle-up</h2><p class="muted small">Estimated allocation using the rules shown above. “Paid” counts shared expenses paid by each housemate; positive balance means they paid more than their share, negative means they still owe their share.</p><div class="tablewrap"><table><thead><tr><th>Housemate</th><th class="amount">Estimated share</th><th class="amount">Shared expenses paid</th><th class="amount">Balance</th></tr></thead><tbody id="settlement"></tbody></table></div><p class="small muted" style="margin-top:12px">Calculation: rent uses the listed allocation weights; PUB uses person-days (Aaron 93, Badette 31, Gelo 31, Princess 73, Roel 31); Wi-Fi and remaining shared expenses are split equally among the five permanent housemates. Grocery costs exclude visitors.</p><p class="small muted">Stamping duty: none recorded for October 2026 (it occurs every two years). Wi-Fi recorded at S$29.99, based on the previous monthly bill.</p></section>
 <div class="footer">Built for the Woodlands household · October 2026 · Keep the receipts, keep it fair. 💚</div>
 </main>
 <script>
@@ -82,6 +82,19 @@ function render(){
 }
 ["search","type","payer"].forEach(id=>document.getElementById(id).addEventListener(id==="search"?"input":"change",render));
 document.getElementById("csvBtn").addEventListener("click",()=>{const rows=[["Expense","Paid by","Type","Category","Amount"],...expenses.map(e=>[e.item,e.payer,e.kind,e.category,e.amount.toFixed(2)])];const csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(",")).join("\r\n");const blob=new Blob([csv],{type:"text/csv;charset=utf-8;"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="woodlands-october-2026-expenses.csv";a.click();URL.revokeObjectURL(url)});
-render();
+function renderSettlement(){
+ const weights={Aaron:.35,Badette:.13125,Gelo:.2625,Princess:.13125,Roel:.125};
+ const days={Aaron:93,Badette:31,Gelo:31,Princess:73,Roel:31};
+ const totalDays=Object.values(days).reduce((a,b)=>a+b,0);
+ const shares=Object.fromEntries(people.map(p=>[p,0]));
+ const rent=sum(shared.filter(e=>e.item==="Monthly rent"));
+ const pub=sum(shared.filter(e=>e.item==="October PUB bill"));
+ const wifi=sum(shared.filter(e=>e.item==="Monthly Wi-Fi"));
+ const equalPool=sum(shared.filter(e=>!["Monthly rent","October PUB bill","Monthly Wi-Fi"].includes(e.item)));
+ people.forEach(p=>{shares[p]+=rent*weights[p]+pub*days[p]/totalDays+(wifi+equalPool)/people.length});
+ const paid=Object.fromEntries(people.map(p=>[p,sum(shared.filter(e=>e.payer===p))]));
+ document.getElementById("settlement").innerHTML=people.map(p=>{const balance=paid[p]-shares[p];const color=balance>=0?"#246543":"#a74343";const label=balance>=0?"is owed":"owes";return '<tr><td><b>'+p+'</b></td><td class="amount">'+money(shares[p])+'</td><td class="amount">'+money(paid[p])+'</td><td class="amount" style="color:'+color+'"><b>'+money(Math.abs(balance))+'</b><br><span class="small">'+label+'</span></td></tr>'}).join("");
+}
+render();renderSettlement();
 </script>
 </body></html>
