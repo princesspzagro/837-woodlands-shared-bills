@@ -76,7 +76,7 @@ const payerSelect=document.getElementById("payer");people.forEach(p=>payerSelect
 function render(){
  const q=document.getElementById("search").value.toLowerCase(), payer=document.getElementById("payer").value;
  const filtered=expenses.filter(e=>(payer==="all"||e.payer===payer)&&(!q||(e.item+" "+e.payer+" "+e.category).toLowerCase().includes(q)));
- document.getElementById("ledger").innerHTML=filtered.map(e=>'<tr><td>'+e.item+'</td><td>'+e.payer+'</td><td><span class="pill '+e.kind+'">'+(e.kind==="shared"?"Shared":"Personal")+'</span></td><td class="amount">'+money(e.amount)+'</td></tr>').join("")||'<tr><td colspan="4" class="empty">No matching expenses.</td></tr>';
+ document.getElementById("ledger").innerHTML=filtered.map(e=>'<tr><td>'+e.item+'</td><td>'+e.payer+'</td><td><span class="pill shared">Shared</span></td><td class="amount">'+money(e.amount)+'</td></tr>').join("")||'<tr><td colspan="4" class="empty">No matching expenses.</td></tr>';
  const paid=people.map(p=>({p,total:sum(shared.filter(e=>e.payer===p))}));const max=Math.max(...paid.map(x=>x.total),1);
  document.getElementById("paidBy").innerHTML=paid.map(x=>'<div class="splitrow"><div class="avatar">'+x.p[0]+'</div><div class="splitmain"><div class="splitname">'+x.p+'</div><div class="track"><div class="fill" style="width:'+(x.total/max*100)+'%"></div></div></div><div class="money">'+money(x.total)+'</div></div>').join("");
  const cats={};shared.forEach(e=>cats[e.category]=(cats[e.category]||0)+e.amount);
